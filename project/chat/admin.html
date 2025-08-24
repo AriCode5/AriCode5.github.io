@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Chat</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; margin: 0; background-color: #f0f2f5; }
+        .chat-box { flex: 1; padding: 20px; overflow-y: scroll; background-color: #e5ddd5; }
+        .message { margin-bottom: 10px; padding: 10px; border-radius: 15px; max-width: 70%; word-wrap: break-word; }
+        .sent { background-color: #dcf8c6; margin-left: auto; text-align: right; }
+        .received { background-color: #fff; margin-right: auto; text-align: left; }
+        .input-box { display: flex; padding: 10px; background-color: #f0f2f5; border-top: 1px solid #ccc; }
+        input[type="text"] { flex: 1; padding: 10px; border-radius: 20px; border: none; margin-right: 10px; }
+        button { padding: 10px 20px; border: none; border-radius: 20px; background-color: #007bff; color: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="chat-box" id="chat-box"></div>
+    <div class="input-box">
+        <input type="text" id="message-input" placeholder="Ketik balasan...">
+        <button onclick="sendMessage()">Kirim</button>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const messageInput = document.getElementById('message-input');
+        
+        async function fetchMessages() {
+            try {
+                const response = await fetch('database.json');
+                const data = await response.json();
+                chatBox.innerHTML = '';
+                data.messages.forEach(msg => {
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message');
+                    messageElement.classList.add(msg.sender === 'Admin' ? 'sent' : 'received');
+                    messageElement.textContent = `${msg.sender}: ${msg.text}`;
+                    chatBox.appendChild(messageElement);
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+            }
+        }
+
+        async function sendMessage() {
+            const text = messageInput.value;
+            if (text) {
+                const newMessage = {
+                    sender: 'Admin',
+                    text: text,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Di sini Anda perlu back-end server untuk menyimpan data.
+                // Karena ini hanya front-end, kita akan simulasi dengan mencetak ke konsol.
+                console.log('Mengirim balasan:', newMessage);
+                
+                // Tambahkan pesan ke UI
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', 'sent');
+                messageElement.textContent = `Admin: ${newMessage.text}`;
+                chatBox.appendChild(messageElement);
+                messageInput.value = '';
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Fetch pesan setiap beberapa detik
+        setInterval(fetchMessages, 3000);
+        fetchMessages(); // Panggil pertama kali
+    </script>
+</body>
+</html>
